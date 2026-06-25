@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang='vi'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>EduFocus Ultimate | Lofi Study Station v7.5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090a0f;
+            /* Giao diện Glassmorphism mờ mịn, dịu mắt */
+            --panel: rgba(15, 18, 36, 0.65);
+            --accent: #818cf8; /* Tím pastel nhẹ nhàng */
+            --accent-glow: rgba(129, 140, 248, 0.2);
+            --magenta: #f472b6; /* Hồng đào soft */
+            --magenta-glow: rgba(244, 114, 182, 0.15);
+            --green: #34d399;
+            --yellow: #fbbf24;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.1px; transition: all 0.2s ease; }
+        
+        /* Hình nền mặc định có hiệu ứng overlay làm dịu */
+        body { 
+            background-color: var(--bg);
+            background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            color: var(--text); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            position: relative; 
+        }
+        
+        /* Kính mờ siêu mịn cho Sidebar */
+        .sidebar { width: 340px; background: rgba(10, 12, 22, 0.75); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; gap: 20px; box-shadow: 5px 0 30px rgba(0,0,0,0.3); z-index: 10; overflow-y: auto; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        .logo span { font-family: 'Orbitron', sans-serif; color: var(--magenta); }
+        
+        /* RPG HUD & Persona */
+        .hud-profile { background: rgba(255,255,255,0.04); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .hud-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 5px; }
+        .hud-bar-bg { height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+        .hud-bar-fill { height: 100%; width: 0%; }
+        
+        /* Main Layout */
+        .main { flex: 1; padding: 30px; overflow-y: auto; z-index: 1; backdrop-filter: blur(2px); }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px dashed var(--border); padding-bottom: 15px; }
+        header h1 { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: #fff; }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 380px; gap: 25px; }
+
+        /* Giao diện Thẻ dạng Glassmorphism */
+        .card { background: var(--panel); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 16px; padding: 22px; border: 1px solid var(--border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); }
+        h2 { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--accent); }
+
+        /* Thẻ Chọn hình nền */
+        .bg-selector-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .bg-btn { background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; }
+        .bg-btn.active { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); }
+
+        /* Soundscape Mixer */
+        .mixer-row { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; }
+        .mixer-row input { flex: 1; cursor: pointer; height: 4px; }
+
+        /* Inputs, Buttons & Priority Selector */
+        .input-group-vertical { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+        .task-input-container { display: flex; gap: 10px; }
+        input, textarea { background: rgba(10, 10, 15, 0.6); border: 1px solid var(--border); color: white; padding: 12px 14px; border-radius: 8px; outline: none; font-size: 14px; }
+        input:focus { border-color: var(--accent); }
+        
+        .priority-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .priority-btn { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text-muted); padding: 9px; border-radius: 8px; cursor: pointer; text-align: center; font-weight: 600; font-size: 11px; }
+        .priority-btn[data-value="high"].active { border-color: var(--magenta); color: #fff; background: rgba(244, 114, 182, 0.15); }
+        .priority-btn[data-value="normal"].active { border-color: var(--yellow); color: #fff; background: rgba(251, 191, 36, 0.15); }
+        .priority-btn[data-value="low"].active { border-color: var(--green); color: #fff; background: rgba(52, 211, 153, 0.15); }
+
+        .btn { background: rgba(255,255,255,0.03); border: 1px solid var(--accent); color: var(--accent); padding: 10px 18px; border-radius: 8px; font-weight: 700; font-family: 'Orbitron', sans-serif; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn:hover { background: var(--accent); color: #111; }
+        .btn-magenta { border-color: var(--magenta); color: var(--magenta); }
+        .btn-magenta:hover { background: var(--magenta); color: #111; }
+
+        /* Timer Circle Controls */
+        .timer-container { width: 170px; height: 170px; margin: 10px auto 20px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .circle-html { position: absolute; width: 170px; height: 170px; transform: rotate(-90deg); }
+        .circle-html circle { width: 100%; height: 100%; fill: none; stroke-width: 6; stroke-linecap: round; transform: translate(5px, 5px); }
+        .circle-bg { stroke: rgba(255,255,255,0.04); }
+        .circle-progress { stroke: var(--accent); stroke-dasharray: 471; stroke-dashoffset: 471; }
+        #timer { font-family: 'Orbitron', sans-serif; font-size: 34px; font-weight: 900; color: #fff; position: absolute; }
+
+        /* Tasks Layout */
+        #taskList { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+        .task-item { background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--yellow); border-top: 1px solid var(--border); }
+        .task-item.high { border-left-color: var(--magenta); }
+        .task-item.low { border-left-color: var(--green); }
+        .done { text-decoration: line-through; opacity: 0.3; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .stat-card { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; text-align: center; border: 1px solid var(--border); }
+        .stat-card div { font-family: 'Orbitron', sans-serif; font-size: 20px; color: var(--green); font-weight: 700; margin-top: 4px; }
+
+        .log-box { font-family: monospace; font-size: 11px; color: #cbd5e1; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; height: 110px; overflow-y: auto; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-coffee"></i> LOFI<span>STUDY</span> v7.5</div>
+        
+        <div class="hud-profile">
+            <div class="hud-row"><span style="color:var(--accent)"><i class="fas fa-graduation-cap"></i> LV.<span id="userLevel">1</span> ĐỒNG HÀNH</span> <span id="userExpText">0/1000 EXP</span></div>
+            <div class="hud-bar-bg"><div id="expBar" class="hud-bar-fill" style="background:var(--accent);"></div></div>
+            
+            <div class="hud-row"><span style="color:var(--magenta)"><i class="fas fa-battery-three-quarters"></i> NĂNG LƯỢNG TẬP TRUNG</span> <span id="energyText">100%</span></div>
+            <div class="hud-bar-bg"><div id="energyBarHUD" class="hud-bar-fill" style="background:var(--magenta); width:100%;"></div></div>
+            <p id="avatarState" style="font-size:11px; color:var(--text-muted); text-align:center; font-style:italic;">☕ Sẵn sàng bước vào không gian tập trung</p>
+        </div>
+
+        <div class="card" style="padding:15px;">
+            <h2><i class="fas fa-image"></i> STUDY BACKGROUND</h2>
+            <div class="bg-selector-grid">
+                <button class="bg-btn active" onclick="changeBg('rain', this)">Phòng Mưa</button>
+                <button class="bg-btn" onclick="changeBg('cafe', this)">Quán Cà Phê</button>
+                <button class="bg-btn" onclick="changeBg('forest', this)">Rừng Thông</button>
+                <button class="bg-btn" onclick="changeBg('space', this)">Vũ Trụ Chill</button>
+            </div>
+        </div>
+
+        <div class="card" style="padding:15px; background:rgba(255,255,255,0.01)">
+            <h2><i class="fas fa-sliders-h"></i> AMBIENT MIXER</h2>
+            <div class="mixer-row"><span>🌧️ Mưa rơi</span><input type="range" id="vol-rain" min="0" max="1" step="0.1" value="0" oninput="mixSound('rain')"></div>
+            <div class="mixer-row"><span>☕ Quán cafe</span><input type="range" id="vol-cafe" min="0" max="1" step="0.1" value="0" oninput="mixSound('cafe')"></div>
+            <div class="mixer-row"><span>⌨️ Tiếng phím</span><input type="range" id="vol-key" min="0" max="1" step="0.1" value="0" oninput="mixSound('key')"></div>
+            <div class="mixer-row"><span>🌊 Sóng biển</span><input type="range" id="vol-wave" min="0" max="1" step="0.1" value="0" oninput="mixSound('wave')"></div>
+        </div>
+
+        <div class="card" style="padding:15px;">
+            <h2><i class="fas fa-music"></i> LOFI STREAM</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button class="music-btn" style="padding:8px; border-radius:6px; font-size:12px; cursor:pointer; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border);" onclick="switchChannel('lofi', 'https://stream.zeno.fm/f3wvuxv7aba0v')" id="btn-lofi">Lo-Fi Live</button>
+                <button class="music-btn" style="padding:8px; border-radius:6px; font-size:12px; cursor:pointer; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border);" onclick="switchChannel('cyber', 'https://stream.zeno.fm/95196u27aba0v')" id="btn-cyber">Lofi Chill</button>
+            </div>
+        </div>
+
+        <audio id="audio-rain" src="https://assets.mixkit.co/active_storage/sfx/2433/2433-84.wav" loop></audio>
+        <audio id="audio-cafe" src="https://www.soundjay.com/human/sounds/ambient-talking-1.mp3" loop></audio>
+        <audio id="audio-key" src="https://www.soundjay.com/applause/sounds/typewriter-key-1.mp3" loop></audio>
+        <audio id="audio-wave" src="https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3" loop></audio>
+        <audio id="coreAudio" loop></audio>
+        <audio id="alarmAudio" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+        <div style="margin-top:auto; border-top:1px solid var(--border); padding-top:10px;">
+            <div id="clock" style="font-family:'Orbitron'; font-size:22px; color:var(--accent); text-align: center;">00:00:00</div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header>
+            <div>
+                <h1>STUDY ROOM DASHBOARD</h1>
+                <p style="color:var(--text-muted); font-size:13px; margin-top:2px;">Bật một chút tiếng mưa, chọn phông nền yêu thích và bắt đầu học tập nào.</p>
+            </div>
+        </header>
+
+        <div class="grid-layout">
+            <section style="display:flex; flex-direction:column; gap:20px;">
+                <div class="card">
+                    <h2><i class="fas fa-tasks"></i> MỤC TIÊU HỌC TẬP TRONG NGÀY</h2>
+                    <div class="input-group-vertical">
+                        <div class="task-input-container">
+                            <input id="taskInput" placeholder="Hôm nay bạn cần hoàn thành môn học hoặc công việc gì..." style="flex:1;">
+                            <button class="btn" onclick="addTask()"><i class="fas fa-plus"></i> THÊM MỤC TIÊU</button>
+                        </div>
+                        <div class="priority-selector">
+                            <div class="priority-btn active" data-value="high" onclick="selectPriority('high')">🔴 QUAN TRỌNG</div>
+                            <div class="priority-btn" data-value="normal" onclick="selectPriority('normal')">🟡 TRUNG BÌNH</div>
+                            <div class="priority-btn" data-value="low" onclick="selectPriority('low')">🟢 NHẸ NHÀNG</div>
+                        </div>
+                    </div>
+                    <div id="taskList"></div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-pen-fancy"></i> SỔ TAY GHI CHÚ NHANH</h2>
+                    <textarea id="quickNotes" style="width:100%; height:95px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid var(--border); padding:10px; color:#fff; resize:none; line-height:1.5;" placeholder="Ghi chép công thức, từ vựng hoặc ý tưởng đột xuất..." oninput="saveNotes()"></textarea>
+                </div>
+            </section>
+
+            <aside style="display:flex; flex-direction:column; gap:20px;">
+                <div class="card" style="text-align:center;">
+                    <h2><i class="fas fa-clock"></i> ĐỒNG HỒ POMODORO</h2>
+                    
+                    <div class="timer-container">
+                        <svg class="circle-html"><circle class="circle-bg" cx="80" cy="80" r="80"></circle><circle class="circle-progress" id="circleProgress" cx="80" cy="80" r="80"></circle></svg>
+                        <div id="timer">25:00</div>
+                    </div>
+
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn" style="flex:1;" onclick="startTimer()"><i class="fas fa-play"></i> BẮT ĐẦU</button>
+                        <button class="btn btn-magenta" style="flex:1;" onclick="triggerBreak()"><i class="fas fa-mug-hot"></i> GIẢI LAO</button>
+                    </div>
+
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button class="btn" onclick="pauseTimer()" style="flex:1; border-color:var(--text-muted); color:var(--text-muted);"><i class="fas fa-pause"></i> DỪNG</button>
+                        <button class="btn" onclick="resetTimer()" style="flex:1; border-color:rgba(255,255,255,0.1); color:var(--text-muted);"><i class="fas fa-undo"></i> ĐẶT LẠI</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-chart-line"></i> THỐNG KÊ KẾT QUẢ</h2>
+                    <div class="stat-grid">
+                        <div class="stat-card"><p style="font-size:11px; color:var(--text-muted)">MỤC TIÊU</p><div id="count">0</div></div>
+                        <div class="stat-card"><p style="font-size:11px; color:var(--text-muted)">PHIÊN ĐÃ HỌC</p><div id="sessions">0</div></div>
+                    </div>
+                    <div style="margin-top:10px;"><div id="sessionLog" class="log-box"></div></div>
+                    <button class="btn btn-magenta" onclick="resetSessions()" style="width:100%; margin-top:8px; font-size:11px; padding:6px;"><i class="fas fa-trash-alt"></i> RESET DỮ LIỆU</button>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let studySessions = +localStorage.getItem('sessions') || 0;
+        let sessionLogs = JSON.parse(localStorage.getItem('sessionLogs')) || [];
+        let exp = +localStorage.getItem('userExp') || 0;
+        let level = Math.floor(exp / 1000) + 1;
+        let energy = 100;
+        let time = 1500, interval, currentChannel = '';
+        let selectedPriorityValue = 'high';
+        const audio = document.getElementById('coreAudio');
+
+        // Logic Thay đổi Hình Nền
+        function changeBg(type, btn) {
+            document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let url = '';
+            if (type === 'rain') url = 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1200&q=80';
+            else if (type === 'cafe') url = 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80';
+            else if (type === 'forest') url = 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80';
+            else if (type === 'space') url = 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=1200&q=80';
+
+            document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('${url}')`;
+        }
+
+        function selectPriority(val) {
+            document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.priority-btn[data-value="${val}"]`).classList.add('active');
+            selectedPriorityValue = val;
+        }
+
+        function mixSound(id) {
+            const aud = document.getElementById(`audio-${id}`);
+            const vol = document.getElementById(`vol-${id}`).value;
+            aud.volume = vol;
+            if(vol > 0 && aud.paused) aud.play().catch(()=>{});
+            else if(vol == 0) aud.pause();
+        }
+
+        function switchChannel(name, url) {
+            const btn = document.getElementById(`btn-${name}`);
+            if (currentChannel === name) { audio.pause(); currentChannel = ''; btn.style.background = 'rgba(0,0,0,0.3)'; } 
+            else {
+                document.querySelectorAll('.music-btn').forEach(b => b.style.background = 'rgba(0,0,0,0.3)');
+                audio.src = url; audio.play().then(() => { currentChannel = name; btn.style.background = 'var(--accent)'; }).catch(() => alert("Hãy bấm chuột tương tác trước!"));
+            }
+        }
+
+        function addExp(amount) {
+            exp += amount; localStorage.setItem('userExp', exp);
+            level = Math.floor(exp / 1000) + 1; renderRPG();
+        }
+
+        function triggerBreak() {
+            pauseTimer(); time = 300; updateTimerDisplay();
+            avatarState.innerText = "☕ Đang thưởng thức trà ấm và hồi sức...";
+            let intervalBreak = setInterval(() => {
+                if(energy < 100) { energy += 5; if(energy > 100) energy = 100; renderRPG(); }
+            }, 1000);
+            startTimer();
+        }
+
+        function renderRPG() {
+            document.getElementById('userLevel').innerText = level;
+            let currentLevelExp = exp % 1000;
+            document.getElementById('userExpText').innerText = `${currentLevelExp}/1000 EXP`;
+            document.getElementById('expBar').style.width = (currentLevelExp / 10) + '%';
+            document.getElementById('energyText').innerText = energy + '%';
+            document.getElementById('energyBarHUD').style.width = energy + '%';
+            if(energy <= 20) { avatarState.innerText = "⚠️ Mệt mỏi rồi, nghỉ ngơi vài phút đi bạn ơi!"; }
+        }
+
+        function addTask() {
+            let val = taskInput.value.trim(); if(!val) return;
+            tasks.push({text: val, done: false, priority: selectedPriorityValue});
+            taskInput.value = ''; addExp(50); save();
+        }
+
+        function toggle(i) { tasks[i].done = !tasks[i].done; if(tasks[i].done) addExp(100); save(); }
+        function del(i, e) { e.stopPropagation(); tasks.splice(i, 1); save(); }
+        function saveNotes() { localStorage.setItem('cyberNotes', quickNotes.value); }
+        function save() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('sessions', studySessions);
+            localStorage.setItem('sessionLogs', JSON.stringify(sessionLogs));
+            render();
+        }
+
+        function resetSessions() { if(confirm('Bạn có chắc muốn làm sạch toàn bộ lịch sử học tập?')) { studySessions = 0; sessionLogs = []; exp = 0; save(); renderRPG(); } }
+
+        function render() {
+            taskList.innerHTML = '';
+            tasks.forEach((t, i) => {
+                let pText = t.priority === 'high' ? '🔴 QUAN TRỌNG' : (t.priority === 'normal' ? '🟡 THƯỜNG' : '🟢 NHẸ');
+                taskList.innerHTML += `<div class="task-item ${t.priority} ${t.done ? 'done' : ''}" onclick="toggle(${i})"><span style="cursor:pointer; font-size:13.5px;">[${pText}] ${t.text}</span><i class="fas fa-trash-alt" style="color:var(--magenta); cursor:pointer; padding:3px;" onclick="del(${i}, event)"></i></div>`;
+            });
+            sessionLog.innerHTML = sessionLogs.length ? sessionLogs.map(l => `<div>> ${l}</div>`).join('') : "> Bắt đầu phiên học mới thôi...";
+            count.innerText = tasks.length; sessions.innerText = studySessions;
+            quickNotes.value = localStorage.getItem('cyberNotes') || '';
+        }
+
+        function startTimer() {
+            clearInterval(interval);
+            avatarState.innerText = "✍️ Tập trung tối đa, mọi thứ xung quanh tạm lắng xuống...";
+            interval = setInterval(() => {
+                if(time > 0) { 
+                    time--; updateTimerDisplay(); 
+                    let offset = 471 - (471 * (1500 - time)) / 1500;
+                    document.getElementById('circleProgress').style.strokeDashoffset = offset;
+                    if(time % 60 === 0 && energy > 0) { energy -= 2; renderRPG(); }
+                } else { 
+                    clearInterval(interval); studySessions++; 
+                    document.getElementById('alarmAudio').play();
+                    sessionLogs.unshift(`☕ Hoàn thành học lúc: ${new Date().toLocaleTimeString('vi-VN')}`);
+                    addExp(300); save(); time = 1500; updateTimerDisplay();
+                    document.getElementById('circleProgress').style.strokeDashoffset = 471;
+                    alert('Tuyệt vời! Bạn đã hoàn thành xuất sắc một phiên học tập.');
+                }
+            }, 1000); // Đã cố định lại thời gian chạy chuẩn 1 giây thực tế
+        }
+
+        function pauseTimer() { clearInterval(interval); }
+        function resetTimer() { pauseTimer(); time = 1500; updateTimerDisplay(); document.getElementById('circleProgress').style.strokeDashoffset = 471; }
+        function updateTimerDisplay() {
+            let m = Math.floor(time / 60), s = time % 60;
+            timer.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+        }
+
+        setInterval(() => { clock.innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
+        render(); renderRPG();
+    </script>
+</body>
+</html>
